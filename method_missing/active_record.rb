@@ -7,7 +7,10 @@ module ActiveRecord
     end
 
     def self.columns
-     @columns ||= connection.exec("SELECT column_name, data_type FROM information_schema.columns WHERE table_name='#{table_name}'").to_a
+      @columns ||= begin
+                        results = connection.exec("SELECT column_name, data_type FROM information_schema.columns WHERE table_name='#{table_name}'").to_a
+                        Hash[results.map{ |row| row.values_at("column_name", "data_type")}].transform_keys(&:to_sym)
+      end
     end
 
     def self.connection
@@ -16,7 +19,7 @@ module ActiveRecord
     
     def self.inherited(base)
       base.class_eval do
-        columns.each do |column|
+        columns.each do |name, type|
           name = column["column_name"]
           define_method(name) do
             @attributes[name]
@@ -29,8 +32,8 @@ module ActiveRecord
       end
     end
 
-    def initialize
-      @attributes = {}
+    def initialize(attributes=nil)
+      @attributes = attributes.slice(*self.class.columns.keys)
     end
    end 
 end
@@ -41,10 +44,8 @@ end
 class Project < ActiveRecord::Base
 end
 
-project = Project.new
-projct.title = "test"
-p project.title
-
-p User.table_name.downcase
 p User.columns
-
+p Project.columns
+p User.new(name: "Ashley", email: "ashley@boehs.com")
+p user.name
+p user.email
