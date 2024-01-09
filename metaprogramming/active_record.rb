@@ -32,8 +32,16 @@ module ActiveRecord
       end
     end
 
-    def initialize(attributes=nil)
-      @attributes = attributes.slice(*self.class.columns.keys)
+    def self.where(**options)
+      where = options.map{ |column, value| "#{column}='#{value}'"}.join(" AND ")
+      results = connection.exec("SELECT * FROM #{table_name} WHERE #{where};")
+      results.map do |row|
+        new(row)
+      end
+    end
+
+    def initialize(attributes={})
+      @attributes = attributes.transform_keys(&:to_sym).slice(*self.class.columns.keys)
     end
    end 
 end
@@ -46,6 +54,9 @@ end
 
 p User.columns
 p Project.columns
+
 p User.new(name: "Ashley", email: "ashley@boehs.com")
 p user.name
 p user.email
+
+p User.where(first_name: "Ashley")
