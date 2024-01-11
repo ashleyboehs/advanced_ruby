@@ -44,3 +44,4 @@ end
 p User.active
 p User.new.active?
 p User.new.email
+p User.active
