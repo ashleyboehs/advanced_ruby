@@ -1,7 +1,26 @@
 TASKS = {}
 
-def task(name, &block)
-  TASKS[name.to_s] = block
+class Task
+  def initialize(name, dependencies, block)
+    @name = name
+    @dependencies = dependencies
+    @block = block
+  end
+
+  def call
+    return if @already_run
+
+    @dependencies.each do |dep|
+      TASKS[dep.to_s].call
+    end
+
+    @block.call
+    @already_run = true
+  end
+end
+
+def task(name, dependencies: [], &block)
+  TASKS[name.to_s] = Task.new(name, dependencies, block)
 end
 
 load "./Rakefile"

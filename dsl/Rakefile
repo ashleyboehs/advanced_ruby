@@ -1,3 +1,11 @@
+task :world do
+  puts "world"
+end
+
 task :hello do
   puts "hello world"
+end
+
+task :hello_world, dependencies: [:hello, :world] do
+  puts "Done!"
 end
